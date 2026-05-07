@@ -10,6 +10,7 @@ pipeline {
     environment {
         CI = 'true'
         PLAYWRIGHT_JUNIT_OUTPUT_NAME = 'test-results/junit.xml'
+        PLAYWRIGHT_HTML_REPORT = 'playwright-report'
     }
 
     parameters {
@@ -52,7 +53,9 @@ pipeline {
 
                     bat """
                     if not exist test-results mkdir test-results
-                    npx playwright test ${projectFlag} ${grepFlag} --reporter=html,junit,list
+                    if not exist playwright-report mkdir playwright-report
+
+                    npx playwright test ${projectFlag} ${grepFlag} --reporter=list,html,junit
                     """
                 }
             }
@@ -61,7 +64,7 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/junit.xml'
+            junit allowEmptyResults: true, testResults: '**/junit.xml'
 
             archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true, fingerprint: true
             archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
@@ -81,7 +84,7 @@ pipeline {
         }
 
         failure {
-            echo 'Playwright tests failed. Check the HTML report and traces.'
+            echo 'Playwright tests failed. Check console logs.'
         }
     }
 }
