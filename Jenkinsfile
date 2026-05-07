@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS'
+    }
+
     options {
         timeout(time: 60, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -30,6 +34,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Verify Node and npm') {
+            steps {
+                bat 'node -v'
+                bat 'npm -v'
             }
         }
 
