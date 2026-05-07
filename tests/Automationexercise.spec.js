@@ -12,7 +12,7 @@ const { CartPage } = require('../pages/CartPage');
 const { CheckoutPage } = require('../pages/CheckoutPage');
 const { PaymentPage } = require('../pages/PaymentPage');
 
-test.only('automation (POM)', async ({ page }) => {
+test('automation (POM)', async ({ page }) => {
   const email = randomEmail();
 
   const home = new HomePage(page);
