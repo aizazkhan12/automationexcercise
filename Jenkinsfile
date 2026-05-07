@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.57.0-jammy'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     options {
         timeout(time: 60, unit: 'MINUTES')
@@ -15,7 +10,6 @@ pipeline {
 
     environment {
         CI = 'true'
-        HOME = "${env.WORKSPACE}"
         PLAYWRIGHT_JUNIT_OUTPUT_NAME = 'test-results/junit.xml'
     }
 
@@ -41,7 +35,13 @@ pipeline {
 
         stage('Install dependencies') {
             steps {
-                sh 'npm ci || npm install'
+                bat 'npm ci || npm install'
+            }
+        }
+
+        stage('Install Playwright browsers') {
+            steps {
+                bat 'npx playwright install --with-deps'
             }
         }
 
@@ -50,7 +50,7 @@ pipeline {
                 script {
                     def projectFlag = params.BROWSER == 'all' ? '' : "--project=${params.BROWSER}"
                     def grepFlag = params.GREP?.trim() ? "--grep \"${params.GREP}\"" : ''
-                    sh "npx playwright test ${projectFlag} ${grepFlag} --reporter=html,junit,list"
+                    bat "npx playwright test ${projectFlag} ${grepFlag} --reporter=html,junit,list"
                 }
             }
         }
