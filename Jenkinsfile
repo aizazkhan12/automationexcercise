@@ -44,19 +44,19 @@ pipeline {
             }
         }
 
-        stage('Install dependencies') {
+        stage('Install Dependencies') {
             steps {
                 bat 'npm ci || npm install'
             }
         }
 
-        stage('Install Playwright browsers') {
+        stage('Install Playwright Browsers') {
             steps {
                 bat 'npx playwright install'
             }
         }
 
-        stage('Run Playwright tests') {
+        stage('Run Playwright Tests') {
             steps {
                 script {
                     def projectFlag = params.BROWSER == 'all' ? '' : "--project=${params.BROWSER}"
@@ -75,27 +75,36 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: '**/junit.xml'
-
-            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true, fingerprint: true
-            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
-
             publishHTML(target: [
-                reportName: 'Playwright HTML Report',
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
                 reportDir: 'playwright-report',
                 reportFiles: 'index.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: true
+                reportName: 'Playwright HTML Report'
             ])
+
+            junit allowEmptyResults: true, testResults: 'test-results/junit.xml'
         }
 
         success {
-            echo 'All Playwright tests passed.'
+            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK')]) {
+                bat '''
+                curl -X POST -H "Content-type: application/json" ^
+                --data "{\\"text\\":\\"Jenkins Build SUCCESS\\nProject: Playwright CI\\nStatus: Tests Passed\\"}" ^
+                %SLACK_WEBHOOK%
+                '''
+            }
         }
 
         failure {
-            echo 'Playwright tests failed. Check console logs.'
+            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK')]) {
+                bat '''
+                curl -X POST -H "Content-type: application/json" ^
+                --data "{\\"text\\":\\"Jenkins Build FAILED\\nProject: Playwright CI\\nAction Required: Check Jenkins Console Output\\"}" ^
+                %SLACK_WEBHOOK%
+                '''
+            }
         }
     }
 }
