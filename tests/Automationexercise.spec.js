@@ -81,3 +81,4 @@ test('automation (POM)', async ({ page }) => {
 
   await payment.clickContinue();
 });
+//test automation
