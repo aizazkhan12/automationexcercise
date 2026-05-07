@@ -4,7 +4,6 @@ pipeline {
     options {
         timeout(time: 60, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        ansiColor('xterm')
         timestamps()
     }
 
@@ -22,7 +21,7 @@ pipeline {
         string(
             name: 'GREP',
             defaultValue: '',
-            description: 'Optional test title pattern (passed to --grep)'
+            description: 'Optional test title pattern passed to grep'
         )
     }
 
@@ -41,7 +40,7 @@ pipeline {
 
         stage('Install Playwright browsers') {
             steps {
-                bat 'npx playwright install --with-deps'
+                bat 'npx playwright install'
             }
         }
 
@@ -50,7 +49,11 @@ pipeline {
                 script {
                     def projectFlag = params.BROWSER == 'all' ? '' : "--project=${params.BROWSER}"
                     def grepFlag = params.GREP?.trim() ? "--grep \"${params.GREP}\"" : ''
-                    bat "npx playwright test ${projectFlag} ${grepFlag} --reporter=html,junit,list"
+
+                    bat """
+                    if not exist test-results mkdir test-results
+                    npx playwright test ${projectFlag} ${grepFlag} --reporter=html,junit,list
+                    """
                 }
             }
         }
@@ -72,9 +75,11 @@ pipeline {
                 allowMissing: true
             ])
         }
+
         success {
             echo 'All Playwright tests passed.'
         }
+
         failure {
             echo 'Playwright tests failed. Check the HTML report and traces.'
         }
