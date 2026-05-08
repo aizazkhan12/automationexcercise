@@ -91,7 +91,7 @@ pipeline {
             withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK')]) {
                 bat '''
                 curl -X POST -H "Content-type: application/json" ^
-                --data "{\\"text\\":\\"Jenkins Build SUCCESS\\nProject: Playwright CI\\nStatus: Tests Passed\\"}" ^
+                --data "{\\"text\\":\\"Jenkins Build SUCCESS\\nProject: Playwright Automation\\nStatus: Tests Passed\\"}" ^
                 %SLACK_WEBHOOK%
                 '''
             }
@@ -101,7 +101,7 @@ pipeline {
             withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK')]) {
                 bat '''
                 curl -X POST -H "Content-type: application/json" ^
-                --data "{\\"text\\":\\"Jenkins Build FAILED\\nProject: Playwright CI\\nAction Required: Check Jenkins Console Output\\"}" ^
+                --data "{\\"text\\":\\"Jenkins Build FAILED\\nProject: Playwright Automation\\nAction Required: Check Jenkins Console Output\\"}" ^
                 %SLACK_WEBHOOK%
                 '''
             }
